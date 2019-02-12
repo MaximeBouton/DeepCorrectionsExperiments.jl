@@ -62,7 +62,7 @@ rng = MersenneTwister(seed)
 
 const K = 4
 
-pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_prob = 0.3, pos_obs_noise=0.0, vel_obs_noise=0.0)
+pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_prob = 0.3)
 
 env = KMarkovEnvironment(pomdp, k=K)
 
