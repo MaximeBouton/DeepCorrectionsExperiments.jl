@@ -51,7 +51,7 @@ else
 end
 
 println("Evaluating in environment with $MAX_PEDS pedestrians")
-pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS)
+pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, no_ped_prob = 0.3)
 
 println("Loading policy...")
 
