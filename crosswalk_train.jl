@@ -62,12 +62,12 @@ rng = MersenneTwister(seed)
 
 const K = 4
 
-pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_prob = 0.3)
+pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_prob = 0.3, pos_obs_noise=0.0, vel_obs_noise=0.0)
 
 env = KMarkovEnvironment(pomdp, k=K)
 
 input_dims = reduce(*, obs_dimensions(env))
-model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32, relu), Dense(32,32, relu), Dense(32,32, relu), Dense(32,n_actions(env), relu))
+model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32, relu),  Dense(32,32, relu),  Dense(32,32, relu), Dense(32,n_actions(env)))
 dqn_solver = DeepQLearningSolver(qnetwork = model, 
                              learning_rate = 1e-4,
                              max_steps = parsed_args["training_steps"],
@@ -82,7 +82,7 @@ dqn_solver = DeepQLearningSolver(qnetwork = model,
                              prioritized_replay_alpha = 0.7,
                              prioritized_replay_epsilon = 1e-3,
                              eval_freq = 10_000,
-                             save_freq = 10_000,
+                             save_freq = 5_000,
                              log_freq = 1000,
                              logdir = parsed_args["logdir"],
                              double_q = true,
