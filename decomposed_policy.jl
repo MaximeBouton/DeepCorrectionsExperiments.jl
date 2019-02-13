@@ -14,6 +14,12 @@ function POMDPs.action(policy::DecPolicy, s::OCObs)
     return actions(policy.problem)[ai]
 end
 
+function POMDPs.action(policy::DecPolicy, s::Vector{OCObs}) # for the KMarkov updater
+    s_ = hcat(s...)
+    ai = argmax(actionvalues(policy, s_))
+    return actions(policy.problem)[ai]
+end
+
 function POMDPPolicies.actionvalues(policy::DecPolicy, s)
     return Flux.data(_actionvalues(policy, decompose_state(policy.problem, s)))
 end
@@ -23,7 +29,7 @@ function _actionvalues(policy::DecPolicy, s_dec::AbstractArray)   # no hidden st
 end
 
 function decompose_state(pomdp::OCPOMDP, s)
-    return [get_singlestate(pomdp, s, i) for i in pomdp.max_peds]
+    return [get_singlestate(pomdp, s, i) for i in 1:pomdp.max_peds]
 end
 
 function get_singlestate(pomdp::OCPOMDP, s, i::Int) #XXX Beware of batch size!

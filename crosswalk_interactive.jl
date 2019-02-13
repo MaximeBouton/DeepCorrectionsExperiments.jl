@@ -14,6 +14,8 @@ using Flux
 using DeepQLearning
 using BSON
 
+includet()
+
 rng = MersenneTwister(1)
 
 const K = 4
@@ -37,21 +39,25 @@ else
     BSON.@load  "log/policy.bson" policy
 end
 
+single_policy = BSON.load("local/policy_single.bson")[:policy]
+policy =  DecPolicy(single_policy, pomdp, (x,y) -> min.(x,y))
+
 # policy = RandomPolicy(pomdp, rng=rng)
 
 
 hr = HistoryRecorder(rng=rng, max_steps = 100)
 s0 = initialstate(pomdp, rng)
+AutoViz.render(s0, pomdp.env, cam = StaticCamera(VecE2(25.0,0.0), 15.0))
+
+
 initial_observation = generate_o(pomdp, s0, rng)
 initial_obs_vec = fill(initial_observation, K)
 hist = simulate(hr, pomdp, policy, up, initial_obs_vec, s0)
 
-
-
 # Visualize
 using Reel
 frames = Frames(MIME("image/png"), fps=4)
-AutoViz.render(s0, pomdp.env, cam = StaticCamera(VecE2(25.0,0.0), 15.0))
+
 for step in eachstep(hist, "s,a,r,sp")
     s, a, r, sp = step
     push!(frames, AutoViz.render(sp, pomdp.env, cam=StaticCamera(VecE2(25.0,0.0), 15.0)))

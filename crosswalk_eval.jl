@@ -43,12 +43,8 @@ include("decomposed_policy.jl")
 
 const N_EVAL = parsed_args["n_eval"]
 const MAX_STEPS = 100
+const MAX_PEDS = 10
 
-if parsed_args["single"]
-    const MAX_PEDS = 1
-else
-    const MAX_PEDS = 10
-end
 
 println("Evaluating in environment with $MAX_PEDS pedestrians")
 pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, no_ped_prob = 0.3)
@@ -60,9 +56,15 @@ if parsed_args["correction"] != nothing
     lowfi_policy = DecPolicy(single_policy, pomdp, (x,y) -> min.(x,y))
     correction_network = BSON.load(parsed_args["policy"])[:correction]
     problem = BSON.load(parsed_args["policy"])[:problem]
-    policy = DeepCorrectionPolicy(problem, correction_network, lowfi_policy, additive_correction, 1.0, ordered_actions(pomdp))    
+    policy = DeepCorrectionPolicy(problem, correction_network, lowfi_policy, additive_correction, 1.0, ordered_actions(pomdp))   
+    println("Initialized Deep Correction policy from $(parsed_args["correction"]) and $(parsed_args["policy"])")
+elseif parsed_args["single"] !=nothing 
+    single_policy = BSON.load(parsed_args["policy"])[:policy]
+    policy =  DecPolicy(single_policy, pomdp, (x,y) -> min.(x,y))
+    println("Initialized Decomposed Policy from $(parsed_args["policy"])")
 else
     BSON.@load parsed_args["policy"] policy
+    println("Initialize DQN policy from $(parsed_args["policy"])")
 end
 
 const K = 4
