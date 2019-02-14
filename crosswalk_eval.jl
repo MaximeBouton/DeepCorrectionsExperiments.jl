@@ -47,7 +47,7 @@ const MAX_PEDS = 10
 
 
 println("Evaluating in environment with $MAX_PEDS pedestrians")
-pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, no_ped_prob = 0.3)
+pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, no_ped_prob = 0.1)
 
 println("Loading policy...")
 
@@ -58,7 +58,7 @@ if parsed_args["correction"] != nothing
     problem = BSON.load(parsed_args["policy"])[:problem]
     policy = DeepCorrectionPolicy(problem, correction_network, lowfi_policy, additive_correction, 1.0, ordered_actions(pomdp))   
     println("Initialized Deep Correction policy from $(parsed_args["correction"]) and $(parsed_args["policy"])")
-elseif parsed_args["single"] !=nothing 
+elseif parsed_args["single"]
     single_policy = BSON.load(parsed_args["policy"])[:policy]
     policy =  DecPolicy(single_policy, pomdp, (x,y) -> min.(x,y))
     println("Initialized Decomposed Policy from $(parsed_args["policy"])")

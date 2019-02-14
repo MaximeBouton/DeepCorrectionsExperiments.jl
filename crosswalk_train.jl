@@ -62,7 +62,7 @@ rng = MersenneTwister(seed)
 
 const K = 4
 
-pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_prob = 0.3)
+pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_prob = 0.1)
 
 env = KMarkovEnvironment(pomdp, k=K)
 
@@ -72,7 +72,7 @@ dqn_solver = DeepQLearningSolver(qnetwork = model,
                              learning_rate = 1e-4,
                              max_steps = parsed_args["training_steps"],
                              eps_end = parsed_args["eps_end"],
-                             eps_fraction = parsed_args["eps_fraction"],
+                             eps_fraction = parsed_args["eps_fraction"], # -0.4/9*(parsed_args["eps_fraction"] - 1) + 0.5,
                              max_episode_length = 100,
                              target_update_freq = 5000,
                              buffer_size = 400_000,
@@ -94,7 +94,8 @@ else
     single_policy = BSON.load(parsed_args["correction"])[:policy]
     lowfi_policy = DecPolicy(single_policy, pomdp, (x,y) -> min.(x,y))
     solver = DeepCorrectionSolver(dqn = dqn_solver,
-                                  lowfi_values = lowfi_policy)
+                                  lowfi_values = lowfi_policy,
+                                  correction_weight = 1.0)
 end
 
 # run solver 
