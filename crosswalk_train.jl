@@ -56,9 +56,10 @@ else
     MAX_PEDS = 10
 end
 
-seed = parsed_args["seed"]
-Random.seed!(seed)
-rng = MersenneTwister(seed)
+# seed = parsed_args["seed"]
+# Random.seed!(seed)
+# rng = MersenneTwister(seed)
+rng = Random.GLOBAL_RNG
 
 const K = 4
 
