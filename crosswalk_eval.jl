@@ -97,7 +97,7 @@ summary = describe(df, stats=[:mean, :std])
 
 println(summary)
 
-CSV.write(joinpath(parsed_args["logdir"], "log.csv"), df, append=true)
-CSV.write(joinpath(parsed_args["logdir"], "summary.csv"), summary, append=true)
+CSV.write(joinpath(parsed_args["logdir"], "log.csv"), df, append=true, writeheader=true)
+CSV.write(joinpath(parsed_args["logdir"], "summary.csv"), summary, append=true, writeheader=true)
 
 println("Results saved in $(parsed_args["logdir"])")
