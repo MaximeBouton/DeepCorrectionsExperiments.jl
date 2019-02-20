@@ -68,7 +68,13 @@ pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_p
 env = KMarkovEnvironment(pomdp, k=K)
 
 input_dims = reduce(*, obs_dimensions(env))
-model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32, relu),  Dense(32,32, relu),  Dense(32,32, relu), Dense(32,n_actions(env)))
+if parsed_args["correction"] != nothing 
+    model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32,relu), Dense(32, n_actions(env)))
+elseif parsed_args["single"]
+    model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32,relu), Dense(32, n_actions(env)))
+else
+    model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32, relu),  Dense(32,32, relu),  Dense(32,32, relu), Dense(32,n_actions(env)))
+end
 dqn_solver = DeepQLearningSolver(qnetwork = model, 
                              learning_rate = 1e-4,
                              max_steps = parsed_args["training_steps"],
