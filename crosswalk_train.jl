@@ -19,11 +19,15 @@ using BSON
 using ArgParse
 
 include("decomposed_policy.jl")
+include("value_decomposition_network.jl")
 
 s = ArgParseSettings()
 @add_arg_table s begin
     "--single"
         help = "set max_peds to 1"
+        action = :store_true
+    "--vdn"
+        help = "value decomposition network"
         action = :store_true
     "--seed"
         help = "specify the random seed"
@@ -62,14 +66,14 @@ else
     MAX_PEDS = 10
 end
 
-# seed = parsed_args["seed"]
-# Random.seed!(seed)
-# rng = MersenneTwister(seed)
-rng = Random.GLOBAL_RNG
+seed = parsed_args["seed"]
+Random.seed!(seed)
+rng = MersenneTwister(seed)
+# rng = Random.GLOBAL_RNG
 
 const K = 4
 
-pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_prob = 0.1)
+pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = MAX_PEDS, γ=0.99, no_ped_prob = 0.3)
 
 env = KMarkovEnvironment(pomdp, k=K)
 
@@ -78,6 +82,11 @@ if parsed_args["correction"] != nothing
     model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32,relu), Dense(32, n_actions(env)))
 elseif parsed_args["single"]
     model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32,relu), Dense(32, n_actions(env)))
+elseif parsed_args["vdn"]
+    model = ValueDecompositionNetwork(pomdp,
+                                      Chain(),
+                                      Chain(Dense(4*K,32, relu), Dense(32,32,relu), Dense(32, 1)), # value branch
+                                      Chain(Dense(4*K, 32, relu),Dense(32,32,relu), Dense(32, n_actions(env)))) # advantage
 else
     model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32, relu),  Dense(32,32, relu),  Dense(32,32, relu), Dense(32,n_actions(env)))
 end
@@ -108,7 +117,11 @@ else
     lowfi_policy = DecPolicy(single_policy, pomdp, (x,y) -> min.(x,y))
     solver = DeepCorrectionSolver(dqn = dqn_solver,
                                   lowfi_values = lowfi_policy,
-                                  correction_weight = 1.0)
+                                  correction_weight = 0.1)
+end
+
+if parsed_args["vdn"]
+    solver.dueling = false 
 end
 
 # run solver 

@@ -34,7 +34,7 @@ end
 
 function get_singlestate(pomdp::OCPOMDP, s, i::Int) #XXX Beware of batch size!
     n_features = 2
-    ego = s[1:n_features, :]
-    ped = s[n_features*i + 1:n_features*(i + 1), :]
+    ego = view(s, Base.setindex(axes(s), 1:n_features, 1)...)
+    ped = view(s, Base.setindex(axes(s), n_features*i + 1:n_features*(i + 1), 1)...)
     return vcat(ego, ped)
 end
