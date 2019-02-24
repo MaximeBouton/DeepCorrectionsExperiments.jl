@@ -7,16 +7,25 @@ end
 
 function (m::ValueDecompositionNetwork)(inpt)
     decomposed_input = [get_singlestate(m.pomdp, inpt, i) for i in 1:m.pomdp.max_peds] 
-    x = flattenbatch.(decomposed_input) # array of arrays inp x bs
-    d, bs = size(first(x))
-    x = Flux.batch(x) # matrix inp x bs x agents
-    x = reshape(x, d, :)
-    out = m.val(x) .+ m.adv(x) .- mean(m.adv(x), dims=1)
-    out = reshape(out, n_actions(m.pomdp), pomdp.max_peds, :)
+    x = flattenbatch.(decomposed_input) # array of arrays 4*K x bs
+    out = m.val(x[1]) # 4xbs
+    for i=2:length(x)
+        out += m.val(x[i])
+    end
+    out /= m.pomdp.max_peds
 
-    # fusion 
-    out = sum(out, dims=2) # sum over number of pedestrians , dim n_a x bs
-    out = reshape(out, (n_actions(m.pomdp), bs))
+    # d, bs = size(first(x))
+    # x = Flux.batch(x) # matrix inp x bs x agents
+    # x = reshape(x, d, :) 
+    # out = m.val(x) #.+ m.adv(x) .- mean(m.adv(x), dims=1)
+    # out = reshape(out, n_actions(m.pomdp), pomdp.max_peds, :)
+
+    # # fusion 
+    # out = mean(out, dims=2) # sum over number of pedestrians , dim n_a x bs
+    # out = reshape(out, (n_actions(m.pomdp), bs))
+
+
+
     # x = m.base(inpt) #m.base(inpt)
     # ndim, bs = size(x)
     # local_dim = div(ndim, m.n)

@@ -83,10 +83,11 @@ if parsed_args["correction"] != nothing
 elseif parsed_args["single"]
     model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32,relu), Dense(32, n_actions(env)))
 elseif parsed_args["vdn"]
+    
     model = ValueDecompositionNetwork(pomdp,
-                                      Chain(),
-                                      Chain(Dense(4*K,32, relu), Dense(32,32,relu), Dense(32, 1)), # value branch
-                                      Chain(Dense(4*K, 32, relu),Dense(32,32,relu), Dense(32, n_actions(env)))) # advantage
+                                        Chain(),
+                                        Chain(Dense(4*K,32, relu), Dense(32,32,relu), Dense(32,32,relu), Dense(32, n_actions(env))), # value branch
+                                        Chain()) # advantage
 else
     model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32, relu),  Dense(32,32, relu),  Dense(32,32, relu), Dense(32,n_actions(env)))
 end
