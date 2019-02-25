@@ -86,7 +86,7 @@ elseif parsed_args["vdn"]
     
     model = ValueDecompositionNetwork(pomdp,
                                         Chain(),
-                                        Chain(Dense(4*K,32, relu), Dense(32,32,relu), Dense(32,32,relu), Dense(32, n_actions(env))), # value branch
+                                        Chain(Dense(4*K,64, relu), Dense(64,32,relu), Dense(32,32,relu), Dense(32, n_actions(env))), # value branch
                                         Chain()) # advantage
 else
     model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32, relu),  Dense(32,32, relu),  Dense(32,32, relu), Dense(32,n_actions(env)))
