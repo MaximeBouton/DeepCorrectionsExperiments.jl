@@ -15,6 +15,7 @@ training_budget = [100_000, 150_000, 200_000, 250_000, 300_000, 400_000, 550_000
 single_results = [CSV.read(joinpath("single"*string(id), "summary.csv")) for id in ids]
 multi_results = [CSV.read(joinpath("multi"*string(id), "summary.csv")) for id in [10,15,20,25,30,40,55]]
 corr_results = [CSV.read(joinpath("corr"*string(id), "summary.csv")) for id in ids]
+vdn_results = [CSV.read(joinpath("vdn"*string(id), "summary.csv")) for id in [10,15,20,25,30,40,55]]
 
 function query_metric(df::DataFrame, metric::String, op)
     return (op(df[df[:variable] .== metric, :][:mean]), op(df[df[:variable] .== metric, :][:std]))
@@ -30,11 +31,19 @@ end
 
 metric = "success"
 
-function compare_plot(single_results::Array{DataFrame}, multi_results::Array{DataFrame}, corr_results::Union{Nothing, Array{DataFrame}}, metric::String, op)
+function compare_plot(single_results::Array{DataFrame}, 
+                      multi_results::Array{DataFrame}, 
+                      corr_results::Union{Nothing, Array{DataFrame}},
+                      vdn_results::Array{DataFrame},
+                      metric::String, op)
     single_mean = get_data(single_results, metric, :mean)
     single_std = get_data(single_results, metric, :std)
     multi_mean = get_data(multi_results, metric, :mean)
-    corr_success_mean = get_data(corr_results, metric, :mean)   
+    multi_std = get_data(multi_results, metric, :std)
+    corr_success_mean = get_data(corr_results, metric, :mean)
+    corr_std = get_data(corr_results, metric, :std)
+    vdn_mean =  get_data(vdn_results, metric, :mean)  
+    vdn_std = get_data(vdn_results, metric, :std)
     p = Plots.plot(training_budget, op.(single_mean), 
                    label="Decomposition", 
                    xlabel="Training budget (number of interactions)", 
@@ -48,7 +57,8 @@ function compare_plot(single_results::Array{DataFrame}, multi_results::Array{Dat
                     markersize = 5,
                     markercolor = :black,
                     markerstrokecolor = :black,
-                   linewidth=2)
+                   linewidth=2,
+                   errorbar=op.(single_std)/length(single_std))
     Plots.plot!(p, training_budget, op.(corr_success_mean), 
                    label="Correction", 
                    color=:red,
@@ -56,7 +66,8 @@ function compare_plot(single_results::Array{DataFrame}, multi_results::Array{Dat
                     markersize = 5,
                     markercolor = :red,
                     markerstrokecolor = :red,
-                    linewidth=2),
+                    linewidth=2,
+                    errorbar=op.(corr_std)/length(corr_std)),
     Plots.plot!(p, training_budget, op.(multi_mean), 
                    label="DQN",
                    color=:blue,
@@ -64,22 +75,23 @@ function compare_plot(single_results::Array{DataFrame}, multi_results::Array{Dat
                     markersize = 5,
                     markercolor = :blue,
                     markerstrokecolor = :blue,
-                    linewidth=2)
+                    linewidth=2,
+                    errorbar=op.(multi_std)/length(multi_std))
+    Plots.plot!(p, training_budget, op.(vdn_mean), 
+                   label="VDN",
+                   color=:orange,
+                   markershape = :diamond,
+                    markersize = 5,
+                    markercolor = :orange,
+                    markerstrokecolor = :orange,
+                    linewidth=2,
+                    errorbar=op.(vdn_std)/length(vdn_std))
     return p
 end
 
-p = compare_plot(single_results, multi_results, corr_results, "success", x->100*mean(x))
+p = compare_plot(single_results, multi_results, corr_results, vdn_results, "success", x->100*mean(x))
 
-
-
-# Plots.plot(1:7, multi_success_mean)
-# Plots.plot(1:7, mean(corr_success_mean, dims=2), errorbar=std(multi_success_mean, dims=2)./5)
-# Plots.plot(1:7, corr_success_mean)
-
-
-
-
-
+#=
 single_success_mean, single_success_std = collect(zip([query_metric(df, "success") for df in single_results]...))
 
 
@@ -97,3 +109,4 @@ p = Axis([Plots.Linear(training_steps, [multi_success_mean...], legendentry="DQN
          legendPos="south west")
 
 display(p)
+=#
