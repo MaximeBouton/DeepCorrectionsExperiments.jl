@@ -1,6 +1,6 @@
 # DeepCorrectionsExperiments.jl
 
-Scripts to reproduce the experiments from the paper "Decomposition Methods with Deep Correctionsfor Reinforcement Learning" by M. Bouton, K. Julian, A. Nakhaei, K. Fujimura, and M. J. Kochenderfer, 2019.
+Scripts to reproduce the experiments from the paper "Decomposition Methods with Deep Correctionsfor Reinforcement Learning" by M. Bouton, K. Julian, A. Nakhaei, K. Fujimura, and M. J. Kochenderfer, submitted to Journal of Autonomous Agents and Multi-Agents Systems, 2019.
 
 ## Usage
 
