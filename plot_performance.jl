@@ -1,10 +1,8 @@
 using CSV
 using DataFrames
-# using PGFPlots
 using Statistics
 using Plots
 pgfplots()
-# gr()
 using StatPlots
 
 # retrieve all the dataframes 

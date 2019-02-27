@@ -5,7 +5,6 @@ using POMDPPolicies
 using POMDPSimulators
 using BeliefUpdaters
 using AutomotiveDrivingModels
-using AutomotiveSensors
 using AutomotivePOMDPs
 using AutoViz
 using Flux
@@ -49,6 +48,10 @@ s = ArgParseSettings()
         help = "specify the single policy to load "
         arg_type = Union{Nothing, String }
         default = nothing
+    "--weight"
+        help = "weight of the correction network"
+        arg_type = Float64
+        default = 0.1
     "--logdir"
         help = "Directory in which to save the model and log training data"
         arg_type = String
@@ -83,11 +86,8 @@ if parsed_args["correction"] != nothing
 elseif parsed_args["single"]
     model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32,relu), Dense(32, n_actions(env)))
 elseif parsed_args["vdn"]
-    
     model = ValueDecompositionNetwork(pomdp,
-                                        Chain(),
-                                        Chain(Dense(4*K,64, relu), Dense(64,32,relu), Dense(32,32,relu), Dense(32, n_actions(env))), # value branch
-                                        Chain()) # advantage
+                                      Chain(Dense(4*K,64, relu), Dense(64,32,relu), Dense(32,32,relu), Dense(32, n_actions(env)))) 
 else
     model = Chain(x->flattenbatch(x), Dense(input_dims, 32, relu), Dense(32,32, relu),  Dense(32,32, relu),  Dense(32,32, relu), Dense(32,n_actions(env)))
 end
@@ -118,7 +118,7 @@ else
     lowfi_policy = DecPolicy(single_policy, pomdp, (x,y) -> min.(x,y))
     solver = DeepCorrectionSolver(dqn = dqn_solver,
                                   lowfi_values = lowfi_policy,
-                                  correction_weight = 0.1)
+                                  correction_weight = parsed_args["weight"])
 end
 
 if parsed_args["vdn"]
@@ -151,7 +151,7 @@ end
 const N_EVAL = parsed_args["n_eval"]
 const MAX_STEPS = 100
 
-println("Evaluating in environment with $MAX_PEDS pedestrians")
+println("Evaluating in environment with 10 pedestrians")
 pomdp = OCPOMDP(ΔT = 0.5, p_birth = 0.3, max_peds = 10, no_ped_prob = 0.1)
 
 if parsed_args["single"]

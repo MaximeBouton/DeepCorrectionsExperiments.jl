@@ -28,7 +28,6 @@ using POMDPs
 using POMDPSimulators
 using POMDPModelTools
 using AutomotiveDrivingModels 
-using AutomotiveSensors
 using AutomotivePOMDPs
 using BeliefUpdaters
 using Flux
